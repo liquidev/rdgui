@@ -29,11 +29,12 @@ method event*(button: Button, ev: UIEvent) =
   if ev.kind in {evMousePress, evMouseRelease}:
     if button.hasMouse and ev.kind == evMousePress:
       button.fPressed = true
-      ev.consume()
     elif ev.kind == evMouseRelease:
+      if button.pressed:
+        ev.consume()
+        if button.onClick != nil:
+          button.onClick()
       button.fPressed = false
-    if button.pressed and button.onClick != nil:
-      button.onClick()
 
 Button.renderer(Rd, button):
   ctx.begin()
