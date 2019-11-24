@@ -125,7 +125,7 @@ proc ButtonText*(text: string): ControlRenderer =
 
 ### Creating your own controls
 
-```
+```nim
 # as an example, we'll create a counter which increments when it's clicked
 import rdgui/control
 import rdgui/event
