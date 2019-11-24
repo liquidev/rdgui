@@ -114,7 +114,7 @@ method event*(win: FloatingWindow, ev: UIEvent) =
       win.pos += ev.mousePos - win.prevMousePos
     win.prevMousePos = ev.mousePos
 
-renderer(FloatingWindow, Rd, win):
+FloatingWindow.renderer(Rd, win):
   ctx.begin()
   ctx.rect(0, 0, win.width, win.height)
   ctx.draw()

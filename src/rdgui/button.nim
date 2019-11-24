@@ -34,7 +34,7 @@ method event*(button: Button, ev: UIEvent) =
     if button.pressed and button.onClick != nil:
       button.onClick()
 
-renderer(Button, Rd, button):
+Button.renderer(Rd, button):
   ctx.begin()
   ctx.color = gray(0, 64)
   ctx.lrect(0, 0, button.width, button.height)
