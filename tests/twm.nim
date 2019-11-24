@@ -7,16 +7,16 @@ var
     .title("twm")
     .open()
   surface = win.openGfx()
-  wm = newWindowManager(win)
-  myWin = wm.newFloatingWindow(32, 32, 128, 128)
 
 win.onKeyPress do (key: Key, scancode: int, mods: RModKeys):
-  if key == keyEscape:
-    echo "esc"
-    win.close()
+  if key == keyQ:
+    quitGfx()
     quit(0)
 
-wm.add(myWin)
+var wm = newWindowManager(win)
+
+for i in 1..4:
+  wm.add(wm.newFloatingWindow(i.float * 32, i.float * 32, 128, 128))
 
 surface.loop:
   draw ctx, step:

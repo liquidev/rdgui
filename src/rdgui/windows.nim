@@ -115,6 +115,11 @@ renderer(FloatingWindow, Rd, win):
   ctx.begin()
   ctx.rect(0, 0, win.width, win.height)
   ctx.draw()
+  ctx.color = gray(0, 64)
+  ctx.begin()
+  ctx.lrect(0, 0, win.width, win.height)
+  ctx.draw(prLineShape)
+  ctx.color = gray(255)
   BoxChildren(ctx, step, win)
 
 proc initFloatingWindow*(win: FloatingWindow, wm: WindowManager,
