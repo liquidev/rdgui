@@ -26,7 +26,7 @@ proc screenPos*(ctrl: Control): Vec2[float] =
   if ctrl.parent.isNil: ctrl.pos
   else: ctrl.parent.screenPos + ctrl.pos
 
-proc mouseInArea*(ctrl: Control, x, y, w, h: float): bool =
+proc mouseInRect*(ctrl: Control, x, y, w, h: float): bool =
   let
     a = ctrl.screenPos + vec2(x, y)
     b = ctrl.screenPos + vec2(x + w, y + h)
@@ -40,11 +40,16 @@ proc mouseInCircle*(ctrl: Control, x, y, r: float): bool =
     dy = (y + sp.y) - ctrl.rwin.mouseY
   result = dx * dx + dy * dy <= r * r
 
+proc contain*(parent: Control, child: Control) =
+  child.rwin = parent.rwin
+  child.parent = parent
+
 proc initControl*(ctrl: Control, x, y: float, rend: ControlRenderer) =
   ctrl.pos = vec2(x, y)
   ctrl.renderer = rend
 
 template renderer*(T, name, varName, body) {.dirty.} =
+  ## Shortcut for declaring a ControlRenderer.
   proc `T name`*(ctx: RGfxContext, step: float, ctrl: Control) =
     var varName = ctrl.T
     body
@@ -98,8 +103,7 @@ proc newBox*(x, y: float, rend = BoxChildren): Box =
 proc add*(box: Box, child: Control): Box {.discardable.} =
   result = box
   result.children.add(child)
-  child.rwin = box.rwin
-  child.parent = box
+  result.contain(child)
 
 proc bringToTop*(box: Box, child: Control) =
   let i = box.children.find(child)

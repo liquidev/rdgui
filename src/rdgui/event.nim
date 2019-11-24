@@ -3,7 +3,6 @@
 # copyright (C) 2019 iLiquid
 #--
 
-import strutils
 import unicode
 
 export unicode

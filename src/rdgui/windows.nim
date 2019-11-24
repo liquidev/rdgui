@@ -23,7 +23,7 @@ type
     # Properties
     fWidth, fHeight: float
     # Callbacks
-    onClose*: proc (win: Window): bool
+    onClose*: proc (): bool
 
 #--
 # Window manager
@@ -69,7 +69,7 @@ proc `height=`*(win: Window, height: float) =
   win.fHeight = height
 
 proc close*(win: Window) =
-  if win.onClose == nil or win.onClose(win):
+  if win.onClose == nil or win.onClose():
     let handle = win.wm.windows.find(win)
     win.wm.windows.delete(handle)
 
@@ -99,8 +99,11 @@ type
     prevMousePos: Vec2[float]
 
 method event*(win: FloatingWindow, ev: UIEvent) =
+  procCall win.Window.event(ev)
+  if ev.consumed: return
+
   if win.draggable and
-      win.mouseInArea(0, 0, win.width, win.height) and
+      win.mouseInRect(0, 0, win.width, win.height) and
       ev.kind == evMousePress or ev.kind == evMouseRelease:
     win.dragging = ev.kind == evMousePress
     if win.dragging:
