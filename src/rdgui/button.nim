@@ -28,6 +28,7 @@ proc hasMouse*(button: Button): bool =
 method event*(button: Button, ev: UIEvent) =
   if ev.kind in {evMousePress, evMouseRelease}:
     if button.hasMouse and ev.kind == evMousePress:
+      ev.consume()
       button.fPressed = true
     elif ev.kind == evMouseRelease:
       if button.pressed:
