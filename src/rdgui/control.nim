@@ -18,12 +18,13 @@ type
     parent: Control
     pos*: Vec2[float]
     renderer*: ControlRenderer
+    containProc: proc ()
 
 method width*(ctrl: Control): float {.base.} = 0
 method height*(ctrl: Control): float {.base.} = 0
 
 proc screenPos*(ctrl: Control): Vec2[float] =
-  if ctrl.parent.isNil: ctrl.pos
+  if ctrl.parent == nil: ctrl.pos
   else: ctrl.parent.screenPos + ctrl.pos
 
 proc mouseInRect*(ctrl: Control, x, y, w, h: float): bool =
@@ -40,9 +41,16 @@ proc mouseInCircle*(ctrl: Control, x, y, r: float): bool =
     dy = (y + sp.y) - ctrl.rwin.mouseY
   result = dx * dx + dy * dy <= r * r
 
+proc onContain*(ctrl: Control, callback: proc ()) =
+  ## Specify a proc to call when the control is contained within another
+  ## control. If the control creates any controls on init, this is where you
+  ## should create them.
+  ctrl.containProc = callback
+
 proc contain*(parent: Control, child: Control) =
   child.rwin = parent.rwin
   child.parent = parent
+  if child.containProc != nil: child.containProc()
 
 proc initControl*(ctrl: Control, x, y: float, rend: ControlRenderer) =
   ctrl.pos = vec2(x, y)
@@ -50,9 +58,17 @@ proc initControl*(ctrl: Control, x, y: float, rend: ControlRenderer) =
 
 template renderer*(T, name, varName, body) {.dirty.} =
   ## Shortcut for declaring a ControlRenderer.
-  proc `T name`*(ctx: RGfxContext, step: float, ctrl: Control) =
-    var varName = ctrl.T
-    body
+  let `T name`*: ControlRenderer =
+    proc (ctx: RGfxContext, step: float, ctrl: Control) =
+      var varName = ctrl.T
+      body
+
+template prenderer*(T, name, varName, body) {.dirty.} =
+  ## Shortcur for declaring a private ControlRenderer.
+  let `T name`: ControlRenderer =
+    proc (ctx: RGfxContext, step: float, ctrl: Control) =
+      var varName = ctrl.T
+      body
 
 proc draw*(ctrl: Control, ctx: RGfxContext, step: float) =
   # don't use `ctx.transform()` here to avoid unnecessary matrix copies
@@ -60,8 +76,13 @@ proc draw*(ctrl: Control, ctx: RGfxContext, step: float) =
   ctrl.renderer(ctx, step, ctrl)
   ctx.translate(-ctrl.pos.x, -ctrl.pos.y)
 
-method event*(ctrl: Control, ev: UIEvent) {.base.} =
+method onEvent*(ctrl: Control, ev: UIEvent) {.base.} =
   discard
+
+proc event*(ctrl: Control, ev: UIEvent) =
+  ## Send an event to a control.
+  if not ev.consumed:
+    ctrl.onEvent(ev)
 
 #--
 # Box
@@ -83,11 +104,11 @@ method height*(box: Box): float =
     if realHeight > result:
       result = realHeight
 
-renderer(Box, Children, box):
+Box.renderer(Children, box):
   for child in box.children:
     child.draw(ctx, step)
 
-method event*(box: Box, ev: UIEvent) =
+method onEvent*(box: Box, ev: UIEvent) =
   for i in countdown(box.children.len - 1, 0):
     box.children[i].event(ev)
     if ev.consumed:

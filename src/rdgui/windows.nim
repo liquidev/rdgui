@@ -40,7 +40,6 @@ proc event*(wm: WindowManager, ev: UIEvent) =
       break
 
 proc add*(wm: WindowManager, win: Window) =
-  win.rwin = wm.rwin
   wm.windows.add(win)
 
 proc bringToTop*(wm: WindowManager, win: Window) =
@@ -73,12 +72,13 @@ proc close*(win: Window) =
     let handle = win.wm.windows.find(win)
     win.wm.windows.delete(handle)
 
-method event*(win: Window, ev: UIEvent) =
-  procCall win.Box.event(ev)
+method onEvent*(win: Window, ev: UIEvent) =
+  procCall win.Box.onEvent(ev)
 
 proc initWindow*(win: Window, wm: WindowManager, x, y, width, height: float,
                  renderer = BoxChildren) =
   win.initBox(x, y, renderer)
+  win.rwin = wm.rwin
   win.wm = wm
   win.width = width
   win.height = height
@@ -98,17 +98,19 @@ type
     dragging: bool
     prevMousePos: Vec2[float]
 
-method event*(win: FloatingWindow, ev: UIEvent) =
-  procCall win.Window.event(ev)
+method onEvent*(win: FloatingWindow, ev: UIEvent) =
+  procCall win.Window.onEvent(ev)
   if ev.consumed: return
 
-  if win.draggable and
-      win.mouseInRect(0, 0, win.width, win.height) and
-      ev.kind == evMousePress or ev.kind == evMouseRelease:
-    win.dragging = ev.kind == evMousePress
-    if win.dragging:
-      win.wm.bringToTop(win)
-      ev.consume()
+  if win.mouseInRect(0, 0, win.width, win.height) and
+     ev.kind == evMousePress or ev.kind == evMouseRelease:
+    if win.draggable:
+      win.dragging = ev.kind == evMousePress
+      if win.dragging:
+        win.wm.bringToTop(win)
+        ev.consume()
+    else:
+      if ev.kind == evMousePress: ev.consume()
   elif ev.kind == evMouseMove:
     if win.dragging:
       win.pos += ev.mousePos - win.prevMousePos

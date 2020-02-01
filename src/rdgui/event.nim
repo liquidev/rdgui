@@ -18,6 +18,7 @@ type
     evKeyPress = "keyPress"
     evKeyRelease = "keyRelease"
     evKeyChar = "keyChar"
+    evKeyRepeat = "keyRepeat"
   UIEvent* = ref object
     fConsumed: bool
     case kind: UIEventKind
@@ -28,7 +29,7 @@ type
       mmPos: Vec2[float]
     of evMouseScroll:
       sPos: Vec2[float]
-    of evKeyPress, evKeyRelease:
+    of evKeyPress, evKeyRelease, evKeyRepeat:
       kbKey: Key
       kbScancode: int
       kbMods: RModKeys
@@ -74,6 +75,9 @@ proc registerEvents*(win: RWindow, handler: UIEventHandler) =
   win.onKeyRelease do (key: Key, scancode: int, mods: RModKeys):
     handler(UIEvent(kind: evKeyRelease, kbKey: key, kbScancode: scancode,
                     kbMods: mods))
+  win.onKeyRepeat do (key: Key, scancode: int, mods: RModKeys):
+    handler(UIEvent(kind: evKeyRepeat, kbKey: key, kbScancode: scancode,
+                    kbMods: mods))
   win.onChar do (rune: Rune, mods: RModKeys):
     handler(UIEvent(kind: evKeyChar, kcRune: rune, kcMods: mods))
 
@@ -86,7 +90,7 @@ proc `$`*(ev: UIEvent): string =
     result.add($ev.mousePos)
   of evMouseScroll:
     result.add($ev.scrollPos)
-  of evKeyPress, evKeyRelease:
+  of evKeyPress, evKeyRelease, evKeyRepeat:
     result.add($ev.key & '(' & $ev.scancode & ") mods=" & $ev.modKeys)
   of evKeyChar:
     result.add($ev.rune.int & '(' & $ev.rune & ") mods=" & $ev.modKeys)
