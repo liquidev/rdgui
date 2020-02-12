@@ -90,6 +90,8 @@ method onEvent*(tb: TextBox, ev: UIEvent) =
     tb.scrollToCaret()
     ev.consume()
     if tb.onInput != nil: tb.onInput()
+  elif ev.kind in {evMouseEnter, evMouseLeave}:
+    echo ev
 
 renderer(TextBox, Rd, tb):
   let oldFontHeight = tb.font.height

@@ -18,6 +18,7 @@ type
     parent: Control
     pos*: Vec2[float]
     renderer*: ControlRenderer
+    lastMousePos: Vec2[float]
     containProc: proc ()
 
 method width*(ctrl: Control): float {.base.} = 0
@@ -27,12 +28,15 @@ proc screenPos*(ctrl: Control): Vec2[float] =
   if ctrl.parent == nil: ctrl.pos
   else: ctrl.parent.screenPos + ctrl.pos
 
-proc mouseInRect*(ctrl: Control, x, y, w, h: float): bool =
+proc pointInRect*(ctrl: Control, point: Vec2[float], x, y, w, h: float): bool =
   let
     a = ctrl.screenPos + vec2(x, y)
     b = ctrl.screenPos + vec2(x + w, y + h)
-  result = ctrl.rwin.mouseX >= a.x and ctrl.rwin.mouseY >= a.y and
-           ctrl.rwin.mouseX < b.x and ctrl.rwin.mouseY < b.y
+  result = point.x >= a.x and point.y >= a.y and
+           point.x < b.x and point.y < b.y
+
+proc mouseInRect*(ctrl: Control, x, y, w, h: float): bool =
+  ctrl.pointInRect(vec2(ctrl.rwin.mouseX, ctrl.rwin.mouseY), x, y, w, h)
 
 proc mouseInCircle*(ctrl: Control, x, y, r: float): bool =
   let
@@ -81,8 +85,18 @@ method onEvent*(ctrl: Control, ev: UIEvent) {.base.} =
 
 proc event*(ctrl: Control, ev: UIEvent) =
   ## Send an event to a control.
-  if not ev.consumed:
+  if ev.sendable:
     ctrl.onEvent(ev)
+    if ev.kind == evMouseMove:
+      let
+        (x, y, w, h) = (0.0, 0.0, ctrl.width, ctrl.height)
+        hadMouse = ctrl.pointInRect(ctrl.lastMousePos, x, y, w, h)
+        hasMouse = ctrl.pointInRect(ev.mousePos, x, y, w, h)
+      if not hadMouse and hasMouse:
+        ctrl.onEvent(mouseEnterEvent())
+      elif hadMouse and not hasMouse:
+        ctrl.onEvent(mouseLeaveEvent())
+      ctrl.lastMousePos = ev.mousePos
 
 #--
 # Box
