@@ -10,7 +10,7 @@ export unicode
 import rapid/gfx
 
 type
-  UIEventKind* = enum
+  UiEventKind* = enum
     evMousePress = "mousePress"
     evMouseRelease = "mouseRelease"
     evMouseMove = "mouseMove"
@@ -21,7 +21,7 @@ type
     evKeyRelease = "keyRelease"
     evKeyChar = "keyChar"
     evKeyRepeat = "keyRepeat"
-  UIEvent* = ref object
+  UiEvent* = ref object
     fConsumed: bool
     case kind: UIEventKind
     of evMousePress, evMouseRelease:
@@ -40,29 +40,29 @@ type
     of evKeyChar:
       kcRune: Rune
       kcMods: RModKeys
-  UIEventHandler* = proc (event: UIEvent)
+  UiEventHandler* = proc (event: UiEvent)
 
-proc kind*(ev: UIEvent): UIEventKind = ev.kind
-proc consumed*(ev: UIEvent): bool = ev.fConsumed
+proc kind*(ev: UiEvent): UiEventKind = ev.kind
+proc consumed*(ev: UiEvent): bool = ev.fConsumed
 proc unique*(ev: UiEvent): bool = ev.kind in {evMouseEnter, evMouseLeave}
 proc sendable*(ev: UiEvent): bool = not ev.unique and not ev.consumed
 
-proc mouseButton*(ev: UIEvent): MouseButton = ev.mbButton
-proc mousePos*(ev: UIEvent): Vec2[float] = ev.mmPos
-proc scrollPos*(ev: UIEvent): Vec2[float] = ev.sPos
+proc mouseButton*(ev: UiEvent): MouseButton = ev.mbButton
+proc mousePos*(ev: UiEvent): Vec2[float] = ev.mmPos
+proc scrollPos*(ev: UiEvent): Vec2[float] = ev.sPos
 
-proc key*(ev: UIEvent): Key = ev.kbKey
-proc scancode*(ev: UIEvent): int = ev.kbScancode
-proc rune*(ev: UIEvent): Rune = ev.kcRune
+proc key*(ev: UiEvent): Key = ev.kbKey
+proc scancode*(ev: UiEvent): int = ev.kbScancode
+proc rune*(ev: UiEvent): Rune = ev.kcRune
 
-proc modKeys*(ev: UIEvent): RModKeys =
+proc modKeys*(ev: UiEvent): RModKeys =
   case ev.kind
   of evMousePress, evMouseRelease: ev.mbMods
   of evKeyPress, evKeyRelease: ev.kbMods
   of evKeyChar: ev.kcMods
   else: {}
 
-proc consume*(ev: UIEvent) =
+proc consume*(ev: UiEvent) =
   ev.fConsumed = true
 
 proc mousePressEvent*(button: MouseButton, mods: RModKeys): UiEvent =
@@ -95,7 +95,7 @@ proc keyRepeatEvent*(key: Key, scancode: int, mods: RModKeys): UiEvent =
 proc keyCharEvent*(rune: Rune, mods: RModKeys): UiEvent =
   UiEvent(kind: evKeyChar, kcRune: rune, kcMods: mods)
 
-proc registerEvents*(win: RWindow, handler: UIEventHandler) =
+proc registerEvents*(win: RWindow, handler: UiEventHandler) =
   win.onMousePress do (button: MouseButton, mods: RModKeys):
     handler(mousePressEvent(button, mods))
   win.onMouseRelease do (button: MouseButton, mods: RModKeys):
@@ -114,7 +114,7 @@ proc registerEvents*(win: RWindow, handler: UIEventHandler) =
   win.onChar do (rune: Rune, mods: RModKeys):
     handler(keyCharEvent(rune, mods))
 
-proc `$`*(ev: UIEvent): string =
+proc `$`*(ev: UiEvent): string =
   result.add($ev.kind & ' ')
   case ev.kind
   of evMousePress, evMouseRelease:

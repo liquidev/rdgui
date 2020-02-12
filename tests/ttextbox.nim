@@ -13,6 +13,8 @@ var
   myWin = wm.newFloatingWindow(32, 32, 256, 256)
   myTextBox = newTextBox(32, 32, 192, font)
 
+font.lineSpacing = 1.5
+
 wm.add(myWin)
 myWin.add(myTextBox)
 

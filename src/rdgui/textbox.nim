@@ -19,10 +19,11 @@ type
     fontSize*: int
     placeholder*: string
     onInput*: proc ()
+    onAccept*: proc ()
 
 method width*(tb: TextBox): float = tb.fWidth
 method height*(tb: TextBox): float =
-  tb.fontSize.float * tb.font.lineSpacing + 1
+  tb.fontSize.float * tb.font.lineSpacing
 proc `width=`*(tb: TextBox, width: float) =
   tb.fWidth = width
 
@@ -83,6 +84,8 @@ method onEvent*(tb: TextBox, ev: UIEvent) =
       of keyDelete: tb.delete()
       of keyLeft: tb.left()
       of keyRight: tb.right()
+      of keyEnter:
+        if tb.onAccept != nil: tb.onAccept()
       else: discard
     else: discard
     tb.textString = $tb.fText
@@ -90,8 +93,10 @@ method onEvent*(tb: TextBox, ev: UIEvent) =
     tb.scrollToCaret()
     ev.consume()
     if tb.onInput != nil: tb.onInput()
-  elif ev.kind in {evMouseEnter, evMouseLeave}:
-    echo ev
+  elif ev.kind == evMouseEnter:
+    tb.rwin.cursor = ibeam
+  elif ev.kind == evMouseLeave:
+    tb.rwin.cursor = arrow
 
 renderer(TextBox, Rd, tb):
   let oldFontHeight = tb.font.height
@@ -108,7 +113,8 @@ renderer(TextBox, Rd, tb):
   ctx.color = gray(0)
   let pos = tb.screenPos
   ctx.scissor(pos.x, pos.y, tb.width, tb.height):
-    ctx.text(tb.font, tb.xScroll, 0, tb.fText)
+    ctx.text(tb.font, tb.xScroll, tb.height / 2 - 2, tb.fText,
+             vAlign = taMiddle)
 
   if tb.focused and floorMod(time() - tb.blinkTimer, 1.0) < 0.5:
     ctx.begin()

@@ -18,6 +18,7 @@ type
     parent: Control
     pos*: Vec2[float]
     renderer*: ControlRenderer
+    visible*: bool
     lastMousePos: Vec2[float]
     containProc: proc ()
 
@@ -59,6 +60,7 @@ proc contain*(parent: Control, child: Control) =
 proc initControl*(ctrl: Control, x, y: float, rend: ControlRenderer) =
   ctrl.pos = vec2(x, y)
   ctrl.renderer = rend
+  ctrl.visible = true
 
 template renderer*(T, name, varName, body) {.dirty.} =
   ## Shortcut for declaring a ControlRenderer.
@@ -75,17 +77,18 @@ template prenderer*(T, name, varName, body) {.dirty.} =
       body
 
 proc draw*(ctrl: Control, ctx: RGfxContext, step: float) =
-  # don't use `ctx.transform()` here to avoid unnecessary matrix copies
-  ctx.translate(ctrl.pos.x, ctrl.pos.y)
-  ctrl.renderer(ctx, step, ctrl)
-  ctx.translate(-ctrl.pos.x, -ctrl.pos.y)
+  if ctrl.visible:
+    # don't use `ctx.transform()` here to avoid unnecessary matrix copies
+    ctx.translate(ctrl.pos.x, ctrl.pos.y)
+    ctrl.renderer(ctx, step, ctrl)
+    ctx.translate(-ctrl.pos.x, -ctrl.pos.y)
 
 method onEvent*(ctrl: Control, ev: UIEvent) {.base.} =
   discard
 
 proc event*(ctrl: Control, ev: UIEvent) =
   ## Send an event to a control.
-  if ev.sendable:
+  if ctrl.visible and ev.sendable:
     ctrl.onEvent(ev)
     if ev.kind == evMouseMove:
       let
