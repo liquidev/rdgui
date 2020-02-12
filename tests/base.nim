@@ -8,7 +8,7 @@ export windows
 var
   win* = initRWindow()
     .size(800, 600)
-    .title("twm")
+    .title("test")
     .open()
   surface* = win.openGfx()
   wm* = newWindowManager(win)
@@ -23,5 +23,5 @@ proc start*() =
     draw ctx, step:
       ctx.clear(gray(128))
       wm.draw(ctx, step)
-    update step:
+    update:
       discard

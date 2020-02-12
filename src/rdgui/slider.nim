@@ -44,7 +44,7 @@ Slider.renderer(Rd, slider):
   ctx.begin()
   ctx.color = gray(192)
   ctx.rect(0, slider.height / 2 - 1, slider.width, 2)
-  let x = slider.value / (slider.max - slider.min) * slider.width
+  let x = (slider.value - slider.min) / (slider.max - slider.min) * slider.width
   ctx.color = gray(128)
   ctx.rect(x, 0, 2, slider.height)
   ctx.color = gray(255)

@@ -98,7 +98,8 @@ var roundedButton = newButton(32, 32, 192, 32, ButtonRounded)
 
 # renderers can have parameters by wrapping them in closures
 proc ButtonColored*(color: RColor): ControlRenderer =
-  Button.renderer(ColoredImpl, button):
+  Button.prenderer(ColoredImpl, button):
+    # prenderer declares a *private* renderer (without an export marker)
     ctx.begin()
     ctx.color = color
     ctx.rect(0, 0, button.width, button.height)
@@ -113,7 +114,7 @@ import rapid/gfx/text
 var font = loadRFont("Source Code Pro.ttf", 12)
 
 proc ButtonText*(text: string): ControlRenderer =
-  Button.renderer(TextImpl, button):
+  Button.prenderer(TextImpl, button):
     # here, we'll inherit from the built-in ButtonRd renderer
     # *Rd renderers are default renderers meant as placeholders
     ctx.ButtonRd(step, button)
