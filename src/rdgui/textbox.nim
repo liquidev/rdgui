@@ -7,7 +7,7 @@ import rdgui/event
 
 type
   TextBox* = ref object of Control
-    fWidth: float
+    fWidth, fHeight: float
     fText: seq[Rune]
     textString: string
     caret: int
@@ -22,10 +22,11 @@ type
     onAccept*: proc ()
 
 method width*(tb: TextBox): float = tb.fWidth
-method height*(tb: TextBox): float =
-  tb.fontSize.float * tb.font.lineSpacing
+method height*(tb: TextBox): float = tb.fHeight
 proc `width=`*(tb: TextBox, width: float) =
   tb.fWidth = width
+proc `height=`*(tb: TextBox, height: float) =
+  tb.fHeight = height
 
 proc text*(tb: TextBox): string = tb.textString
 proc `text=`*(tb: TextBox, text: string) =
@@ -79,6 +80,7 @@ method onEvent*(tb: TextBox, ev: UIEvent) =
     if tb.focused:
       tb.resetBlink()
   elif tb.focused and ev.kind in {evKeyChar, evKeyPress, evKeyRepeat}:
+    var used = true
     case ev.kind
     of evKeyChar: tb.insert(ev.rune)
     of evKeyPress, evKeyRepeat:
@@ -89,12 +91,12 @@ method onEvent*(tb: TextBox, ev: UIEvent) =
       of keyRight: tb.right()
       of keyEnter:
         if tb.onAccept != nil: tb.onAccept()
-      else: discard
+      else: used = false
     else: discard
     tb.textString = $tb.fText
     tb.resetBlink()
     tb.scrollToCaret()
-    ev.consume()
+    if used: ev.consume()
     if tb.onInput != nil: tb.onInput()
   elif ev.kind == evMouseEnter:
     tb.rwin.cursor = ibeam
@@ -131,11 +133,12 @@ renderer(TextBox, Rd, tb):
   tb.drawEditor(ctx)
   ctx.color = gray(255)
 
-proc initTextBox*(tb: TextBox, x, y, w: float, font: RFont,
+proc initTextBox*(tb: TextBox, x, y, width, height: float, font: RFont,
                   placeholder, text = "", fontSize = 14, prev: TextBox = nil,
                   rend = TextBoxRd) =
   tb.initControl(x, y, rend)
-  tb.width = w
+  tb.width = width
+  tb.height = height
   tb.font = font
   tb.text = text
   tb.placeholder = placeholder
@@ -143,8 +146,10 @@ proc initTextBox*(tb: TextBox, x, y, w: float, font: RFont,
   if prev != nil:
     prev.next = tb
 
-proc newTextBox*(x, y, w: float, font: RFont, placeholder, text = "",
+proc newTextBox*(x, y, width, height: float, font: RFont,
+                 placeholder, text = "",
                  fontSize = 14, prev: TextBox = nil,
                  rend = TextBoxRd): TextBox =
   result = TextBox()
-  result.initTextBox(x, y, w, font, placeholder, text, fontSize, prev, rend)
+  result.initTextBox(x, y, width, height, font, placeholder, text, fontSize,
+                     prev, rend)
