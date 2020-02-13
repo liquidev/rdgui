@@ -128,6 +128,7 @@ Box.renderer(Children, box):
 method onEvent*(box: Box, ev: UIEvent) =
   for i in countdown(box.children.len - 1, 0):
     box.children[i].event(ev)
+    echo ev.consumed
     if ev.consumed:
       break
 

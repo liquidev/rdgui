@@ -30,6 +30,7 @@ proc `width=`*(tb: TextBox, width: float) =
 proc text*(tb: TextBox): string = tb.textString
 proc `text=`*(tb: TextBox, text: string) =
   tb.fText = text.toRunes
+  tb.caret = clamp(tb.caret, 0, tb.fText.len)
   tb.textString = text
 
 proc resetBlink(tb: TextBox) =
@@ -62,7 +63,9 @@ proc right(tb: TextBox) =
 proc xScroll*(tb: TextBox): float = tb.scroll
 
 proc caretPos(tb: TextBox): float =
-  tb.font.widthOf(tb.fText[0..<tb.caret]) + tb.xScroll
+  if tb.fText.len > 0:
+    tb.font.widthOf(tb.fText[0..<tb.caret]) + tb.xScroll
+  else: 0
 
 proc scrollToCaret(tb: TextBox) =
   if tb.caretPos < 0:
@@ -98,19 +101,10 @@ method onEvent*(tb: TextBox, ev: UIEvent) =
   elif ev.kind == evMouseLeave:
     tb.rwin.cursor = arrow
 
-renderer(TextBox, Rd, tb):
+proc drawEditor*(tb: TextBox, ctx: RGfxContext) =
   let oldFontHeight = tb.font.height
   tb.font.height = tb.fontSize
 
-  ctx.color = gray(255)
-  ctx.begin()
-  ctx.rect(-2, -2, tb.width + 4, tb.height + 4)
-  ctx.draw()
-  ctx.color = gray(127)
-  ctx.begin()
-  ctx.lrect(-2, -2, tb.width + 4, tb.height + 4)
-  ctx.draw(prLineShape)
-  ctx.color = gray(0)
   let pos = tb.screenPos
   ctx.scissor(pos.x, pos.y, tb.width, tb.height):
     ctx.text(tb.font, tb.xScroll, tb.height / 2 - 2, tb.fText,
@@ -122,9 +116,20 @@ renderer(TextBox, Rd, tb):
     ctx.line((x, 0.0), (x, tb.fontSize.float * tb.font.lineSpacing))
     ctx.draw(prLineShape)
 
-  ctx.color = gray(255)
-
   tb.font.height = oldFontHeight
+
+renderer(TextBox, Rd, tb):
+  ctx.color = gray(255)
+  ctx.begin()
+  ctx.rect(-2, -2, tb.width + 4, tb.height + 4)
+  ctx.draw()
+  ctx.color = gray(127)
+  ctx.begin()
+  ctx.lrect(-2, -2, tb.width + 4, tb.height + 4)
+  ctx.draw(prLineShape)
+  ctx.color = gray(0)
+  tb.drawEditor(ctx)
+  ctx.color = gray(255)
 
 proc initTextBox*(tb: TextBox, x, y, w: float, font: RFont,
                   placeholder, text = "", fontSize = 14, prev: TextBox = nil,
