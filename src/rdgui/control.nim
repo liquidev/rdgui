@@ -19,7 +19,7 @@ type
     pos*: Vec2[float]
     renderer*: ControlRenderer
     visible*: bool
-    lastMousePos: Vec2[float]
+    lastMousePos*: Vec2[float]
     containProc: proc ()
 
 method width*(ctrl: Control): float {.base.} = 0
@@ -35,20 +35,24 @@ proc mousePos*(ctrl: Control): Vec2[float] =
 
 proc pointInRect*(ctrl: Control, point: Vec2[float], x, y, w, h: float): bool =
   let
-    a = ctrl.screenPos + vec2(x, y)
-    b = ctrl.screenPos + vec2(x + w, y + h)
+    sp = ctrl.screenPos
+    a = sp + vec2(x, y)
+    b = sp + vec2(x + w, y + h)
   result = point.x >= a.x and point.y >= a.y and
            point.x < b.x and point.y < b.y
 
 proc mouseInRect*(ctrl: Control, x, y, w, h: float): bool =
   ctrl.pointInRect(vec2(ctrl.rwin.mouseX, ctrl.rwin.mouseY), x, y, w, h)
 
-proc mouseInCircle*(ctrl: Control, x, y, r: float): bool =
+proc pointInCircle*(ctrl: Control, point: Vec2[float], x, y, r: float): bool =
   let
     sp = ctrl.screenPos
-    dx = (x + sp.x) - ctrl.rwin.mouseX
-    dy = (y + sp.y) - ctrl.rwin.mouseY
+    dx = (x + sp.x) - point.x
+    dy = (y + sp.y) - point.y
   result = dx * dx + dy * dy <= r * r
+
+proc mouseInCircle*(ctrl: Control, x, y, r: float): bool =
+  ctrl.pointInCircle(vec2(ctrl.rwin.mouseX, ctrl.rwin.mouseY), x, y, r)
 
 proc onContain*(ctrl: Control, callback: proc ()) =
   ## Specify a proc to call when the control is contained within another
@@ -132,7 +136,6 @@ Box.renderer(Children, box):
 method onEvent*(box: Box, ev: UIEvent) =
   for i in countdown(box.children.len - 1, 0):
     box.children[i].event(ev)
-    echo ev.consumed
     if ev.consumed:
       break
 

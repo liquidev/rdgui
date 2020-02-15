@@ -26,6 +26,7 @@ type
     case kind: UIEventKind
     of evMousePress, evMouseRelease:
       mbButton: MouseButton
+      mbPos: Vec2[float]
       mbMods: RModKeys
     of evMouseMove:
       mmPos: Vec2[float]
@@ -48,7 +49,11 @@ proc unique*(ev: UiEvent): bool = ev.kind in {evMouseEnter, evMouseLeave}
 proc sendable*(ev: UiEvent): bool = not ev.unique and not ev.consumed
 
 proc mouseButton*(ev: UiEvent): MouseButton = ev.mbButton
-proc mousePos*(ev: UiEvent): Vec2[float] = ev.mmPos
+proc mousePos*(ev: UiEvent): Vec2[float] =
+  case ev.kind
+  of evMousePress, evMouseRelease: ev.mbPos
+  of evMouseMove: ev.mmPos
+  else: vec2(0.0, 0.0)
 proc scrollPos*(ev: UiEvent): Vec2[float] = ev.sPos
 
 proc key*(ev: UiEvent): Key = ev.kbKey
@@ -65,11 +70,13 @@ proc modKeys*(ev: UiEvent): RModKeys =
 proc consume*(ev: UiEvent) =
   ev.fConsumed = true
 
-proc mousePressEvent*(button: MouseButton, mods: RModKeys): UiEvent =
-  UiEvent(kind: evMousePress, mbButton: button, mbMods: mods)
+proc mousePressEvent*(button: MouseButton, pos: Vec2[float],
+                      mods: RModKeys): UiEvent =
+  UiEvent(kind: evMousePress, mbButton: button, mbPos: pos, mbMods: mods)
 
-proc mouseReleaseEvent*(button: MouseButton, mods: RModKeys): UiEvent =
-  UiEvent(kind: evMouseRelease, mbButton: button, mbMods: mods)
+proc mouseReleaseEvent*(button: MouseButton, pos: Vec2[float],
+                        mods: RModKeys): UiEvent =
+  UiEvent(kind: evMouseRelease, mbButton: button, mbPos: pos, mbMods: mods)
 
 proc mouseMoveEvent*(pos: Vec2[float]): UiEvent =
   UiEvent(kind: evMouseMove, mmPos: pos)
@@ -97,9 +104,9 @@ proc keyCharEvent*(rune: Rune, mods: RModKeys): UiEvent =
 
 proc registerEvents*(win: RWindow, handler: UiEventHandler) =
   win.onMousePress do (button: MouseButton, mods: RModKeys):
-    handler(mousePressEvent(button, mods))
+    handler(mousePressEvent(button, vec2(win.mouseX, win.mouseY), mods))
   win.onMouseRelease do (button: MouseButton, mods: RModKeys):
-    handler(mouseReleaseEvent(button, mods))
+    handler(mouseReleaseEvent(button, vec2(win.mouseX, win.mouseY), mods))
   win.onCursorMove do (x, y: float):
     handler(mouseMoveEvent(vec2(x, y)))
   win.onScroll do (x, y: float):
