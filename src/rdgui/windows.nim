@@ -69,6 +69,7 @@ proc `height=`*(win: Window, height: float) =
 
 proc close*(win: Window) =
   if win.onClose == nil or win.onClose():
+    echo cast[int](win)
     let handle = win.wm.windows.find(win)
     win.wm.windows.delete(handle)
 

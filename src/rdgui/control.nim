@@ -15,7 +15,7 @@ type
   ControlRenderer* = proc (ctx: RGfxContext, step: float, ctrl: Control)
   Control* = ref object of RootObj
     rwin*: RWindow
-    parent: Control
+    parent*: Control
     pos*: Vec2[float]
     renderer*: ControlRenderer
     visible*: bool
