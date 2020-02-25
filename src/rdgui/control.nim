@@ -88,6 +88,7 @@ proc draw*(ctrl: Control, ctx: RGfxContext, step: float) =
   if ctrl.visible:
     # don't use `ctx.transform()` here to avoid unnecessary matrix copies
     ctx.translate(ctrl.pos.x, ctrl.pos.y)
+    assert not ctrl.renderer.isNil, "control must have a non-nil renderer"
     ctrl.renderer(ctx, step, ctrl)
     ctx.translate(-ctrl.pos.x, -ctrl.pos.y)
 
