@@ -76,7 +76,7 @@ proc scrollToCaret(tb: TextBox) =
 
 method onEvent*(tb: TextBox, ev: UIEvent) =
   if ev.kind == evMousePress:
-    tb.focused = tb.mouseInRect(0, 0, tb.width, tb.height)
+    tb.focused = tb.hasMouse
     if tb.focused:
       tb.resetBlink()
   elif tb.focused and ev.kind in {evKeyChar, evKeyPress, evKeyRepeat}:

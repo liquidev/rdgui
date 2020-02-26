@@ -44,6 +44,10 @@ proc pointInRect*(ctrl: Control, point: Vec2[float], x, y, w, h: float): bool =
 proc mouseInRect*(ctrl: Control, x, y, w, h: float): bool =
   ctrl.pointInRect(vec2(ctrl.rwin.mouseX, ctrl.rwin.mouseY), x, y, w, h)
 
+proc hasMouse*(ctrl: Control): bool =
+  ## Shortcut for ``ctrl.mouseInRect(0, 0, ctrl.width, ctrl.height)``.
+  ctrl.mouseInRect(0, 0, ctrl.width, ctrl.height)
+
 proc pointInCircle*(ctrl: Control, point: Vec2[float], x, y, r: float): bool =
   let
     sp = ctrl.screenPos

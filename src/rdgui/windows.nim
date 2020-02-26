@@ -102,8 +102,7 @@ method onEvent*(win: FloatingWindow, ev: UIEvent) =
   procCall win.Window.onEvent(ev)
   if ev.consumed: return
 
-  if win.mouseInRect(0, 0, win.width, win.height) and
-     ev.kind == evMousePress or ev.kind == evMouseRelease:
+  if win.hasMouse and ev.kind in {evMousePress, evMouseRelease}:
     if win.draggable:
       win.dragging = ev.kind == evMousePress
       if win.dragging:

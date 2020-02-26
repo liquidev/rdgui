@@ -22,8 +22,6 @@ proc `height=`*(button: Button, height: float) =
   button.fHeight = height
 
 proc pressed*(button: Button): bool = button.fPressed
-proc hasMouse*(button: Button): bool =
-  button.mouseInRect(0, 0, button.width, button.height)
 
 method onEvent*(button: Button, ev: UIEvent) =
   if ev.kind in {evMousePress, evMouseRelease}:
