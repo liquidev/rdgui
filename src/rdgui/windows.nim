@@ -70,7 +70,8 @@ proc `height=`*(win: Window, height: float) =
 proc close*(win: Window) =
   if win.onClose == nil or win.onClose():
     let handle = win.wm.windows.find(win)
-    win.wm.windows.delete(handle)
+    if handle != -1:
+      win.wm.windows.delete(handle)
 
 method onEvent*(win: Window, ev: UIEvent) =
   procCall win.Box.onEvent(ev)
