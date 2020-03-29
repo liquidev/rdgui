@@ -18,7 +18,10 @@ method height*(label: Label): float =
   label.fontSize.float * label.font.lineSpacing
 
 Label.renderer(Default, label):
+  let oldFontSize = label.font.height
+  label.font.height = label.fontSize
   ctx.text(label.font, 0, 0, label.text)
+  label.font.height = oldFontSize
 
 proc initLabel*(label: Label, x, y: float, text: string, font: RFont,
                 fontSize = 14, rend = LabelDefault) =
