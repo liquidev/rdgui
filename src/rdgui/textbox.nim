@@ -91,6 +91,10 @@ method onEvent*(tb: TextBox, ev: UIEvent) =
       of keyRight: tb.right()
       of keyEnter:
         if tb.onAccept != nil: tb.onAccept()
+      of keyTab:
+        if tb.next != nil:
+          tb.focused = false
+          tb.next.focused = true
       else: used = false
     else: discard
     tb.textString = $tb.fText
@@ -115,7 +119,7 @@ proc drawEditor*(tb: TextBox, ctx: RGfxContext) =
   if tb.focused and floorMod(time() - tb.blinkTimer, 1.0) < 0.5:
     ctx.begin()
     var x = tb.caretPos
-    ctx.line((x, 0.0), (x, tb.fontSize.float * tb.font.lineSpacing))
+    ctx.line((x, 0.0), (x, tb.height))
     ctx.draw(prLineShape)
 
   tb.font.height = oldFontHeight
