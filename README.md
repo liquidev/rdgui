@@ -1,5 +1,7 @@
 # rdgui
 
+**Note:** rdgui is not supported anymore and does not compile against latest rapid, it's been superseded by [rapid/ui](https://github.com/liquidev/rapid/blob/master/src/rapid/ui.nim)
+
 rdgui (pronounced _redgui_) is a modular retained GUI toolkit made for
 the rapid game engine.
 
